@@ -1,168 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player vs. Environment - MetaMask Connect</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: #e0e0e0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            flex-direction: column;
-            text-align: center;
-        }
-        .container {
-            max-width: 95%;
-            width: 400px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 15px;
-            box-shadow: 0 8px 32px rgba(0, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .logo {
-            max-width: 70%;
-            height: auto;
-            margin: 0 auto 20px;
-            display: block;
-        }
-        h1 {
-            font-size: 1.8rem;
-            color: #00ffcc;
-            text-shadow: 0 0 10px #00ffcc;
-            margin-bottom: 20px;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 1rem;
-            font-weight: bold;
-            background: linear-gradient(45deg, #f6851b, #ff9500);
-            color: white;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            width: 100%;
-            max-width: 300px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin: 10px auto;
-        }
-        button:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px #f6851b;
-        }
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        #account {
-            font-size: 0.9rem;
-            color: #a0a0a0;
-            word-break: break-all;
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-        }
-        .status {
-            font-size: 0.85rem;
-            color: #00ffcc;
-            margin-top: 10px;
-        }
-        @media (max-width: 600px) {
-            .container {
-                padding: 15px;
-                width: 90%;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            button {
-                font-size: 0.9rem;
-                padding: 10px 15px;
-            }
-            .logo {
-                max-width: 60%;
-            }
-        }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMask Connect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #6200ea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #3700b3;
+    }
+    #status {
+      margin-top: 20px;
+      word-break: break-all;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <img src="https://pbs.twimg.com/profile_images/1954960199862673408/5ByROhul_400x400.jpg" alt="Player vs. Environment Logo" class="logo">
-        <h1>Player vs. Environment</h1>
-        <button id="connectButton">Connect MetaMask</button>
-        <p id="account">No account connected</p>
-        <p class="status" id="status"></p>
-    </div>
+  <div class="container">
+    <h1>Connect to MetaMask</h1>
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <p id="status">Not connected</p>
+  </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.2.0/web3.min.js"></script>
-    <script>
-        const connectButton = document.getElementById('connectButton');
-        const accountDisplay = document.getElementById('account');
-        const statusDisplay = document.getElementById('status');
+  <!-- Load Ethers.js from CDN -->
+  <script src="https://cdn.ethers.io/lib/ethers-5.7.umd.min.js"></script>
+  <script>
+    async function connectWallet() {
+      const status = document.getElementById('status');
 
-        async function checkMetaMask() {
-            if (typeof window.ethereum !== 'undefined') {
-                connectButton.addEventListener('click', connectWallet);
-                const accounts = await ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length > 0) {
-                    updateAccount(accounts[0]);
-                }
-            } else {
-                accountDisplay.textContent = 'MetaMask not detected';
-                statusDisplay.textContent = 'Please install MetaMask!';
-                connectButton.disabled = true;
-            }
+      // Check if MetaMask is installed
+      if (typeof window.ethereum !== 'undefined') {
+        try {
+          // Request account access
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+          const accounts = await provider.send('eth_requestAccounts', []);
+          const account = accounts[0];
+          status.textContent = `Connected: ${account}`;
+        } catch (error) {
+          console.error('Connection error:', error);
+          status.textContent = `Error: ${error.message}`;
         }
-
-        async function connectWallet() {
-            try {
-                const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
-                updateAccount(accounts[0]);
-                statusDisplay.textContent = 'Connected successfully!';
-            } catch (error) {
-                console.error(error);
-                statusDisplay.textContent = 'Connection failed. Try again.';
-            }
-        }
-
-        function updateAccount(account) {
-            accountDisplay.textContent = `Connected: ${account.slice(0, 6)}...${account.slice(-4)}`;
-            connectButton.textContent = 'Wallet Connected';
-            connectButton.disabled = true;
-            statusDisplay.textContent = 'Ready for PvE!';
-        }
-
-        ethereum.on('accountsChanged', (accounts) => {
-            if (accounts.length > 0) {
-                updateAccount(accounts[0]);
-            } else {
-                accountDisplay.textContent = 'No account connected';
-                connectButton.textContent = 'Connect MetaMask';
-                connectButton.disabled = false;
-                statusDisplay.textContent = '';
-            }
-        });
-
-        ethereum.on('chainChanged', () => {
-            window.location.reload();
-        });
-
-        checkMetaMask();
-    </script>
+      } else {
+        status.textContent = 'Please install MetaMask!';
+      }
+    }
+  </script>
 </body>
 </html>
